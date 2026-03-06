@@ -1,1 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bloomtree Advisors — Founder Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --g1:#1a6b45;--g2:#238D5F;--g3:#3aaa78;--g4:#a8dfc5;--g5:#e8f7f0;
+  --y1:#c97a00;--y2:#f59e0b;--y3:#fcd34d;--y4:#fef3c7;
+  --r1:#b91c1c;--r2:#ef4444;--r3:#fca5a5;--r4:#fef2f2;
+  --ink:#0f1c14;--ink2:#2d4a38;--mid:#6b7f74;--muted:#9db4a8;--line:#dde9e3;--surface:#f4f9f6;--white:#fff;
+  --sidebar:224px;--font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--surface);color:var(--ink);font-size:13px}
 
+/* SIDEBAR */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar);background:var(--white);border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+.logo-area{padding:16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo-mark{width:32px;height:32px;background:var(--g2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
+.logo-name{font-size:12px;font-weight:600;color:var(--ink);line-height:1.3}
+.logo-sub{font-size:10px;color:var(--mid)}
+
+/* Period selector in sidebar */
+.period-section{padding:12px 12px 6px;border-bottom:1px solid var(--line);flex-shrink:0}
+.period-section-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:8px;padding:0 4px}
+
+/* Row 1: MTD QTD YTD tabs */
+.prow{display:flex;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:2px;margin-bottom:6px}
+.pb{flex:1;text-align:center;font-size:10px;font-weight:500;padding:5px 2px;border-radius:4px;cursor:pointer;color:var(--mid);transition:all .15s;user-select:none;white-space:nowrap}
+.pb.active{background:var(--g2);color:#fff;font-weight:600}
+
+/* Quarter buttons */
+.qrow{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:6px}
+.qb{text-align:center;font-size:10px;font-weight:500;padding:5px 4px;border-radius:4px;cursor:pointer;color:var(--mid);background:var(--surface);border:1px solid var(--line);transition:all .15s;user-select:none}
+.qb.active{background:var(--g2);color:#fff;border-color:var(--g2);font-weight:600}
+.qb.partial{background:var(--y4);color:var(--y1);border-color:var(--y3)}
+.qb.partial.active{background:var(--y2);color:#fff;border-color:var(--y2)}
+
+/* Month dropdown */
+.month-select{width:100%;font-size:11px;padding:6px 8px;border-radius:5px;border:1px solid var(--line);background:var(--white);color:var(--ink);font-family:var(--font);cursor:pointer;outline:none}
+.month-select:focus{border-color:var(--g2)}
+
+/* FY label */
+.fy-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:0 2px}
+.fy-label{font-size:10px;font-weight:600;color:var(--ink)}
+.fy-sub{font-size:9px;color:var(--muted)}
+
+/* Active period indicator */
+.active-period-pill{display:inline-flex;align-items:center;gap:5px;background:var(--g5);border:1px solid var(--g4);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600;color:var(--g1);margin-top:6px;width:100%;justify-content:center}
+.active-dot{width:5px;height:5px;background:var(--g2);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Nav */
+.nav-section{padding:12px 16px 4px;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 16px;cursor:pointer;color:var(--mid);font-size:12.5px;border-left:2.5px solid transparent;transition:all .15s;user-select:none}
+.nav-item:hover{background:var(--g5);color:var(--g1)}
+.nav-item.active{background:var(--g5);color:var(--g1);border-left-color:var(--g2);font-weight:600}
+.nav-icon{font-size:13px;width:18px;text-align:center}
+.nav-badge{margin-left:auto;background:var(--y3);color:var(--y1);font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px}
+.sidebar-footer{margin-top:auto;padding:12px 16px;border-top:1px solid var(--line);flex-shrink:0}
+.sync-row{font-size:10px;color:var(--muted);line-height:1.9;display:flex;align-items:flex-start;gap:6px}
+.sync-dot{width:6px;height:6px;background:var(--g3);border-radius:50%;margin-top:3px;flex-shrink:0;animation:pulse 2.5s infinite}
+
+/* MAIN */
+.main{margin-left:var(--sidebar);min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:var(--white);border-bottom:1px solid var(--line);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.bc{font-size:11px;color:var(--muted)}
+.bc-sep{color:var(--line);margin:0 4px}
+.bc-cur{color:var(--ink);font-weight:600}
+/* Period context badge in topbar */
+.topbar-period{display:flex;align-items:center;gap:6px;background:var(--g5);border:1px solid var(--g4);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:600;color:var(--g1)}
+.topbar-period-dot{width:5px;height:5px;background:var(--g2);border-radius:50%}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.as-of{font-size:11px;color:var(--mid);font-family:var(--mono)}
+.avatar{width:28px;height:28px;background:var(--g2);border-radius:50%;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+
+/* Content */
+.content{padding:20px 24px;flex:1}
+.page{display:none}
+.page.active{display:block}
+
+/* Page header */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.page-title{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-.4px}
+.page-subtitle{font-size:11.5px;color:var(--mid);margin-top:3px}
+.page-tag{background:var(--g5);color:var(--g1);font-size:10.5px;font-weight:600;padding:4px 12px;border-radius:20px;border:1px solid var(--g4)}
+
+/* Period context banner — shows at top of each page */
+.period-banner{display:flex;align-items:center;gap:10px;background:var(--white);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:14px;flex-wrap:wrap}
+.pb-item{display:flex;flex-direction:column}
+.pb-item-label{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:600}
+.pb-item-val{font-size:12px;font-weight:700;color:var(--ink)}
+.pb-divider{width:1px;height:28px;background:var(--line)}
+.pb-mode{display:inline-flex;align-items:center;gap:5px;background:var(--g2);color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700}
+
+/* KPI cards */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.kpi-card{background:var(--white);border:1px solid var(--line);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--g2)}
+.kpi-card.yellow::before{background:var(--y2)}
+.kpi-card.red::before{background:var(--r2)}
+.kpi-card.dark::before{background:var(--ink)}
+.kpi-label{font-size:10px;color:var(--mid);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi-value{font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-1px;font-family:var(--mono);line-height:1}
+.kpi-value.green{color:var(--g2)}
+.kpi-value.yellow{color:var(--y1)}
+.kpi-value.red{color:var(--r1)}
+.kpi-delta{font-size:11px;margin-top:5px;font-weight:500}
+.kpi-delta.up{color:var(--g2)}
+.kpi-delta.down{color:var(--r2)}
+.kpi-delta.flat{color:var(--mid)}
+.kpi-note{font-size:10px;color:var(--muted);margin-top:2px}
+.kpi-sparkline{margin-top:8px;height:26px}
+
+/* Grids */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.grid-3-2{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px}
+.mb12{margin-bottom:12px}
+
+/* Cards */
+.card{background:var(--white);border:1px solid var(--line);border-radius:10px;padding:16px}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:600;color:var(--ink)}
+.card-sub{font-size:11px;color:var(--mid);margin-top:2px}
+.card-tag{font-size:10px;background:var(--surface);color:var(--mid);padding:3px 8px;border-radius:12px;border:1px solid var(--line);white-space:nowrap}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:11.5px}
+.tbl th{text-align:left;padding:5px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:7px 8px;border-bottom:1px solid var(--surface);color:var(--ink2);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--surface)}
+.tbl .num{text-align:right;font-family:var(--mono);font-size:11px}
+.tbl .bold{font-weight:700;color:var(--ink)}
+.tbl .total td{background:var(--g5);font-weight:700;color:var(--g1);border-top:2px solid var(--g4)}
+.tbl .highlight td{background:var(--y4)}
+
+/* Pills */
+.pill{display:inline-block;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px}
+.p-green{background:var(--g5);color:var(--g1);border:1px solid var(--g4)}
+.p-yellow{background:var(--y4);color:var(--y1);border:1px solid var(--y3)}
+.p-red{background:var(--r4);color:var(--r1);border:1px solid var(--r3)}
+.p-blue{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.p-dark{background:var(--ink);color:#fff}
+
+/* Progress */
+.prog-row{margin-bottom:9px}
+.prog-top{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;color:var(--ink2)}
+.prog-val{font-family:var(--mono);font-weight:600}
+.prog-bg{height:5px;background:var(--surface);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px}
+
+/* Stat row */
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--surface)}
+.stat-row:last-child{border-bottom:none}
+.stat-key{font-size:11.5px;color:var(--mid)}
+.stat-val{font-size:12px;font-family:var(--mono);font-weight:600;color:var(--ink)}
+
+/* Quarter summary */
+.qtr-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.qtr-card{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:12px;position:relative;cursor:pointer;transition:all .15s}
+.qtr-card:hover{border-color:var(--g4)}
+.qtr-card.active-q{background:var(--g5);border-color:var(--g2)}
+.qtr-card.partial-q{border-left:3px solid var(--y2)}
+.qtr-card.future-q{opacity:.45}
+.qtr-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:4px}
+.qtr-card.active-q .qtr-label{color:var(--g1)}
+.qtr-months{font-size:9px;color:var(--muted);margin-bottom:6px}
+.qtr-val{font-size:20px;font-weight:700;font-family:var(--mono);color:var(--ink);letter-spacing:-1px}
+.qtr-card.active-q .qtr-val{color:var(--g2)}
+.qtr-sub{font-size:10px;color:var(--mid);margin-top:3px}
+.qtr-badge{position:absolute;top:8px;right:8px;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px}
+
+/* Heatmap */
+.heatmap{width:100%;border-collapse:collapse;font-size:11px}
+.heatmap th{padding:4px 6px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);text-align:center}
+.heatmap td{padding:5px 8px;text-align:center;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:600}
+.heat-h{background:var(--g2);color:#fff}
+.heat-3{background:#bbf7d0;color:#14532d}
+.heat-2{background:#dcfce7;color:#166534}
+.heat-1{background:var(--g5);color:var(--g2)}
+.heat-0{background:var(--surface);color:var(--muted)}
+.heat-n{background:var(--r4);color:var(--r1)}
+.heat-label{font-size:10px;font-weight:600;color:var(--mid);text-align:left!important}
+.heat-cur{outline:2px solid var(--g2);outline-offset:-2px}
+
+.scrollable{overflow-x:auto}
+
+/* ══ SCREEN SYSTEM ══ */
+.bt-screen { display:none; position:fixed; inset:0; z-index:9999; }
+.bt-screen.visible { display:flex; }
+
+/* ══ LOGIN ══ */
+#bt-login {
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:#f4f9f6;
+  font-family:'DM Sans',sans-serif;
+  padding:20px;
+  position:relative;
+  overflow-y:auto;
+}
+#bt-login::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background-image:radial-gradient(#c8dfd4 1px, transparent 1px);
+  background-size:26px 26px;
+  opacity:.5;
+}
+.bt-login-nav {
+  position:fixed; top:0; left:0; right:0; z-index:10;
+  height:56px; background:#fff; border-bottom:1px solid #dde9e3;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 40px;
+}
+.bt-login-nav-right {
+  font-size:12px; color:#9db4a8;
+}
+.bt-login-nav-right a { color:#238D5F; font-weight:600; text-decoration:none; }
+.bt-login-nav-right a:hover { color:#1a6b45; }
+
+.bt-card {
+  position:relative; z-index:1;
+  width:100%; max-width:430px;
+  background:#fff;
+  border:1px solid #dde9e3;
+  border-radius:18px;
+  box-shadow:0 8px 40px rgba(35,141,95,.09), 0 1px 3px rgba(0,0,0,.04);
+  padding:40px 40px 32px;
+  margin-top:76px;
+}
+.bt-card-logo {
+  display:flex; justify-content:center; margin-bottom:24px;
+}
+.bt-card-divider { height:1px; background:#f0f5f2; margin:18px 0; }
+
+.bt-card-title {
+  font-size:21px; font-weight:700; color:#0f1c14;
+  letter-spacing:-.4px; text-align:center; margin-bottom:4px;
+}
+.bt-card-sub {
+  font-size:12.5px; color:#9db4a8;
+  text-align:center; margin-bottom:26px; line-height:1.5;
+}
+.bt-form-err {
+  background:#fef2f2; border:1px solid #fca5a5; border-radius:8px;
+  padding:9px 13px; font-size:12px; color:#b91c1c;
+  margin-bottom:16px; display:none;
+}
+/* Google button first */
+.bt-google-btn {
+  width:100%; padding:11px 16px;
+  background:#fff; border:1.5px solid #dde9e3; border-radius:10px;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  font-size:13px; font-weight:600; color:#0f1c14;
+  font-family:'DM Sans',sans-serif; cursor:pointer;
+  transition:background .15s, border-color .15s, box-shadow .15s;
+  margin-bottom:18px;
+}
+.bt-google-btn:hover {
+  background:#f4f9f6; border-color:#a8dfc5;
+  box-shadow:0 2px 10px rgba(35,141,95,.08);
+}
+.bt-google-btn svg { flex-shrink:0; }
+
+.bt-or {
+  display:flex; align-items:center; gap:10px;
+  font-size:11px; color:#c4d4ce; margin-bottom:18px;
+}
+.bt-or::before,.bt-or::after {
+  content:''; flex:1; height:1px; background:#edf2ef;
+}
+
+.bt-field { margin-bottom:14px; }
+.bt-label {
+  display:block; font-size:10.5px; font-weight:600; color:#4a6356;
+  text-transform:uppercase; letter-spacing:.7px; margin-bottom:6px;
+}
+.bt-input-wrap { position:relative; }
+.bt-input-icon {
+  position:absolute; left:12px; top:50%; transform:translateY(-50%);
+  color:#b8cfc6; font-size:15px; pointer-events:none; line-height:1;
+}
+.bt-input {
+  width:100%; padding:11px 13px 11px 38px;
+  border:1.5px solid #dde9e3; border-radius:10px;
+  font-size:13px; font-family:'DM Sans',sans-serif; color:#0f1c14;
+  background:#fff; outline:none;
+  transition:border-color .15s, box-shadow .15s;
+}
+.bt-input:focus { border-color:#238D5F; box-shadow:0 0 0 3px rgba(35,141,95,.1); }
+.bt-input::placeholder { color:#ccddd7; }
+
+.bt-row {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:20px; margin-top:2px;
+}
+.bt-check { display:flex; align-items:center; gap:7px; font-size:12px; color:#6b7f74; cursor:pointer; user-select:none; }
+.bt-check input { accent-color:#238D5F; width:13px; height:13px; }
+.bt-forgot { font-size:12px; color:#238D5F; text-decoration:none; font-weight:500; }
+.bt-forgot:hover { color:#1a6b45; }
+
+.bt-submit {
+  width:100%; padding:13px;
+  background:#238D5F; color:#fff; border:none; border-radius:10px;
+  font-size:13.5px; font-weight:600; font-family:'DM Sans',sans-serif;
+  cursor:pointer; letter-spacing:.1px;
+  transition:background .15s, box-shadow .15s, transform .1s;
+}
+.bt-submit:hover {
+  background:#1a6b45;
+  box-shadow:0 6px 22px rgba(35,141,95,.3);
+  transform:translateY(-1px);
+}
+.bt-submit:active { transform:translateY(0); box-shadow:none; }
+
+.bt-login-foot {
+  margin-top:20px; font-size:11px; color:#b8cfc6;
+  text-align:center; line-height:1.9;
+}
+.bt-login-foot a { color:#238D5F; text-decoration:none; font-weight:500; }
+
+.bt-trust-row {
+  position:relative; z-index:1;
+  display:flex; align-items:center; justify-content:center;
+  gap:22px; margin-top:18px; flex-wrap:wrap;
+}
+.bt-trust-item {
+  display:flex; align-items:center; gap:5px;
+  font-size:10.5px; color:#b8cfc6; font-weight:500;
+}
+
+/* ══ COMPANY SELECTOR ══ */
+#bt-company {
+  flex-direction:column;
+  background:#f4f9f6;
+  overflow-y:auto;
+}
+.bt-topbar {
+  width:100%; background:#fff; border-bottom:1px solid #dde9e3;
+  padding:0 32px; height:54px; display:flex; align-items:center;
+  justify-content:space-between; flex-shrink:0;
+}
+.bt-topbar-right { display:flex; align-items:center; gap:12px; }
+.bt-user-name { font-size:12px; color:#6b7f74; font-weight:500; }
+.bt-avatar-sm {
+  width:30px; height:30px; background:#238D5F; border-radius:50%;
+  color:#fff; font-size:10.5px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+}
+.bt-signout {
+  font-size:11px; color:#6b7f74; cursor:pointer;
+  padding:5px 11px; border-radius:6px; border:1px solid #dde9e3;
+  background:none; font-family:'DM Sans',sans-serif; transition:all .15s;
+}
+.bt-signout:hover { border-color:#238D5F; color:#238D5F; }
+
+.bt-cs-body { width:100%; max-width:1000px; margin:0 auto; padding:48px 32px; }
+.bt-cs-eyebrow { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#238D5F; margin-bottom:8px; }
+.bt-cs-title { font-family:'Instrument Serif', Georgia, serif; font-size:34px; color:#0f1c14; letter-spacing:-.3px; line-height:1.1; margin-bottom:5px; }
+.bt-cs-sub { font-size:13px; color:#6b7f74; margin-bottom:32px; }
+.bt-search-wrap { position:relative; max-width:340px; margin-bottom:24px; }
+.bt-search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:13px; color:#9db4a8; pointer-events:none; }
+.bt-search {
+  width:100%; padding:9px 13px 9px 34px;
+  border:1.5px solid #dde9e3; border-radius:8px;
+  font-size:12.5px; font-family:'DM Sans',sans-serif;
+  outline:none; background:#fff; transition:border-color .15s;
+}
+.bt-search:focus { border-color:#238D5F; }
+
+.bt-co-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.bt-co-card {
+  background:#fff; border:1.5px solid #dde9e3; border-radius:12px;
+  padding:18px 20px; cursor:pointer; transition:all .18s; position:relative; overflow:hidden;
+}
+.bt-co-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:#238D5F; transform:scaleX(0); transform-origin:left; transition:transform .2s;
+}
+.bt-co-card:hover { border-color:#a8dfc5; box-shadow:0 6px 24px rgba(35,141,95,.1); transform:translateY(-2px); }
+.bt-co-card:hover::before { transform:scaleX(1); }
+.bt-co-head { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
+.bt-co-logo {
+  width:38px; height:38px; border-radius:9px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:700; color:#fff; letter-spacing:-.5px;
+}
+.bt-co-name { font-size:13px; font-weight:700; color:#0f1c14; line-height:1.25; }
+.bt-co-type { font-size:10px; color:#9db4a8; margin-top:1px; }
+.bt-co-stats { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:14px; }
+.bt-co-stat { background:#f4f9f6; border-radius:6px; padding:7px 10px; }
+.bt-co-stat-val { font-size:13px; font-weight:700; color:#0f1c14; font-family:'DM Mono',monospace; }
+.bt-co-stat-lbl { font-size:9px; color:#9db4a8; text-transform:uppercase; letter-spacing:.4px; margin-top:1px; }
+.bt-co-foot { display:flex; align-items:center; justify-content:space-between; }
+.bt-co-sync { font-size:10px; color:#9db4a8; }
+.bt-badge {
+  font-size:9px; font-weight:700; padding:2px 8px; border-radius:4px;
+  text-transform:uppercase; letter-spacing:.3px;
+}
+.bt-badge-active  { background:#e8f7f0; color:#1a6b45; border:1px solid #a8dfc5; }
+.bt-badge-review  { background:#fef3c7; color:#c97a00; border:1px solid #fcd34d; }
+.bt-badge-alert   { background:#fef2f2; color:#b91c1c; border:1px solid #fca5a5; }
+
+/* ══ DASHBOARD WRAPPER — hide by default ══ */
+#bt-dashboard-wrap { display:none; }
+#bt-dashboard-wrap.visible { display:block; }
+/* company context strip in topbar */
+.bt-co-strip {
+  display:flex; align-items:center; gap:7px;
+  background:#e8f7f0; border:1px solid #a8dfc5;
+  border-radius:20px; padding:3px 12px;
+  font-size:11px; font-weight:600; color:#1a6b45;
+  cursor:pointer;
+}
+.bt-co-strip-dot { width:6px; height:6px; background:#238D5F; border-radius:50%; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     SCREEN 1 — LOGIN
+══════════════════════════════════ -->
+<div class="bt-screen visible" id="bt-login">
+
+  <!-- Fixed nav bar -->
+  <nav class="bt-login-nav">
+    <div style="display:flex;align-items:center;gap:9px">
+      <svg width="28" height="28" viewBox="0 0 110 126" fill="none"><path d="M54.6 0.5L1 54.1c-.3.3-.3.7 0 1l4.7 4.7c.3.3.7.3 1 0L54.6 11.8c.3-.3.7-.3 1 0l47.9 47.9c.3.3.7.3 1 0l4.7-4.7c.3-.3.3-.7 0-1L55.6 0.5c-.3-.3-.7-.3-1 0z" fill="#44865C"/><path d="M54.6 24.6L6.9 72.4c-.3.3-.3.7 0 1l4.7 4.7c.3.3.7.3 1 0L54.6 36c.3-.3.7-.3 1 0l42.1 42.1c.3.3.7.3 1 0l4.7-4.7c.3-.3.3-.7 0-1L55.6 24.6c-.3-.3-.7-.3-1 0z" fill="#44865C"/><path d="M54.6 48.9L18.5 85c-.3.3-.3.7 0 1l4.7 4.7c.3.3.7.3 1 0l30.4-30.4c.3-.3.7-.3 1 0l30.4 30.4c.3.3.7.3 1 0l4.7-4.7c.3-.3.3-.7 0-1L55.6 48.9c-.3-.3-.7-.3-1 0z" fill="#44865C"/><path d="M54.6 73L35.9 91.7c-.3.3-.3.7 0 1l4.7 4.7c.3.3.7.3 1 0l13-13c.3-.3.7-.3 1 0l13 13c.3.3.7.3 1 0l4.7-4.7c.3-.3.3-.7 0-1L55.6 73c-.3-.3-.7-.3-1 0z" fill="#44865C"/><path d="M51.1 100.9v24.4c0 .4.3.7.7.7h6.7c.4 0 .7-.3.7-.7v-24.4c0-.2-.1-.4-.2-.5l-3.3-3.2c-.3-.2-.7-.2-.9 0l-3.4 3.2c-.2.1-.3.3-.3.5z" fill="#DAA32F"/></svg>
+      <span style="font-size:15px;font-weight:700;color:#0f1c14;letter-spacing:-.3px">Bloomtree <span style="color:#238D5F">Advisors</span></span>
+    </div>
+    <div class="bt-login-nav-right">New to Bloomtree? <a href="#">Contact us →</a></div>
+  </nav>
+
+  <!-- Centered card -->
+  <div class="bt-card">
+
+    <!-- Logo -->
+    <div class="bt-card-logo">
+      <div style="display:flex;align-items:center;gap:11px;justify-content:center">
+      <svg width="44" height="44" viewBox="0 0 110 126" fill="none"><path d="M54.6 0.5L1 54.1c-.3.3-.3.7 0 1l4.7 4.7c.3.3.7.3 1 0L54.6 11.8c.3-.3.7-.3 1 0l47.9 47.9c.3.3.7.3 1 0l4.7-4.7c.3-.3.3-.7 0-1L55.6 0.5c-.3-.3-.7-.3-1 0z" fill="#44865C"/><path d="M54.6 24.6L6.9 72.4c-.3.3-.3.7 0 1l4.7 4.7c.3.3.7.3 1 0L54.6 36c.3-.3.7-.3 1 0l42.1 42.1c.3.3.7.3 1 0l4.7-4.7c.3-.3.3-.7 0-1L55.6 24.6c-.3-.3-.7-.3-1 0z" fill="#44865C"/><path d="M54.6 48.9L18.5 85c-.3.3-.3.7 0 1l4.7 4.7c.3.3.7.3 1 0l30.4-30.4c.3-.3.7-.3 1 0l30.4 30.4c.3.3.7.3 1 0l4.7-4.7c.3-.3.3-.7 0-1L55.6 48.9c-.3-.3-.7-.3-1 0z" fill="#44865C"/><path d="M54.6 73L35.9 91.7c-.3.3-.3.7 0 1l4.7 4.7c.3.3.7.3 1 0l13-13c.3-.3.7-.3 1 0l13 13c.3.3.7.3 1 0l4.7-4.7c.3-.3.3-.7 0-1L55.6 73c-.3-.3-.7-.3-1 0z" fill="#44865C"/><path d="M51.1 100.9v24.4c0 .4.3.7.7.7h6.7c.4 0 .7-.3.7-.7v-24.4c0-.2-.1-.4-.2-.5l-3.3-3.2c-.3-.2-.7-.2-.9 0l-3.4 3.2c-.2.1-.3.3-.3.5z" fill="#DAA32F"/></svg>
+      <div><div style="font-size:18px;font-weight:800;color:#0f1c14;letter-spacing:-.4px">Bloomtree</div><div style="font-size:11px;font-weight:600;color:#238D5F;letter-spacing:.5px;text-transform:uppercase;margin-top:1px">Advisors</div></div>
+    </div>
+    </div>
+
+    <div class="bt-card-title">Welcome back</div>
+    <div class="bt-card-sub">Sign in to your founder portal</div>
+
+    <div class="bt-form-err" id="bt-err">⚠ Invalid credentials. Please try again.</div>
+
+    <!-- Google SSO -->
+    <button class="bt-google-btn" onclick="btLogin()">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google Workspace
+    </button>
+
+    <div class="bt-or">or sign in with email</div>
+
+    <div class="bt-field">
+      <label class="bt-label">Email address</label>
+      <div class="bt-input-wrap">
+        <span class="bt-input-icon">✉</span>
+        <input class="bt-input" type="email" id="bt-email" placeholder="you@company.com" value="anantha@trififydigital.in">
+      </div>
+    </div>
+
+    <div class="bt-field">
+      <label class="bt-label">Password</label>
+      <div class="bt-input-wrap">
+        <span class="bt-input-icon">🔑</span>
+        <input class="bt-input" type="password" id="bt-pass" placeholder="Enter your password" value="demo1234">
+      </div>
+    </div>
+
+    <div class="bt-row">
+      <label class="bt-check">
+        <input type="checkbox" checked> Keep me signed in
+      </label>
+      <a href="#" class="bt-forgot">Forgot password?</a>
+    </div>
+
+    <button class="bt-submit" onclick="btLogin()">Sign In →</button>
+
+    <div class="bt-card-divider"></div>
+
+    <div class="bt-login-foot">
+      By continuing you agree to our <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a><br>
+      Need access? <a href="#">Contact your Bloomtree advisor</a>
+    </div>
+
+  </div>
+
+  <!-- Trust strip -->
+  <div class="bt-trust-row">
+    <div class="bt-trust-item">
+      <svg width="12" height="14" viewBox="0 0 12 14" fill="none"><path d="M6 0L0 2.5V6.5C0 9.985 2.571 13.22 6 14C9.429 13.22 12 9.985 12 6.5V2.5L6 0Z" fill="#a8dfc5"/></svg>
+      256-bit SSL
+    </div>
+    <div class="bt-trust-item">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="6.5" fill="#a8dfc5"/><path d="M4 6.5L6 8.5L9.5 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Data hosted in India
+    </div>
+    <div class="bt-trust-item">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="6.5" fill="#a8dfc5"/><path d="M4 6.5L6 8.5L9.5 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      SOC 2 compliant
+    </div>
+  </div>
+
+</div>
+
+     SCREEN 2 — COMPANY SELECTOR
+══════════════════════════════════ -->
+<div class="bt-screen" id="bt-company">
+  <div class="bt-topbar">
+    <svg width="120" height="38" viewBox="0 0 399 126" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M54.6023 0.476702L0.976699 54.1023C0.713426 54.3655 0.713425 54.7924 0.976699 55.0557L5.70863 59.7876C5.9719 60.0509 6.39875 60.0509 6.66203 59.7876L54.6023 11.8474C54.8655 11.5841 55.2924 11.5841 55.5557 11.8474L103.496 59.7876C103.759 60.0509 104.186 60.0509 104.449 59.7876L109.181 55.0557C109.445 54.7924 109.444 54.3655 109.181 54.1023L55.5557 0.4767C55.2924 0.213426 54.8655 0.213428 54.6023 0.476702Z" fill="#44865C"/>
+      <path d="M54.629 48.8722L18.4904 85.0109C18.2271 85.2742 18.2271 85.701 18.4904 85.9643L23.2224 90.6963C23.4857 90.9596 23.9125 90.9596 24.1758 90.6963L54.629 60.2431C54.8923 59.9798 55.3192 59.9798 55.5824 60.2431L86.0357 90.6963C86.2989 90.9596 86.7258 90.9596 86.9891 90.6963L91.7211 85.9643C91.9844 85.701 91.9844 85.2742 91.7211 85.0109L55.5824 48.8722C55.3192 48.6089 54.8923 48.6089 54.629 48.8722Z" fill="#44865C"/>
+      <path d="M51.0483 100.887V125.282C51.0483 125.655 51.3502 125.956 51.7225 125.956H58.4125C58.7848 125.956 59.0866 125.655 59.0866 125.282L59.0866 100.887C59.0866 100.701 59.0101 100.524 58.8751 100.397L55.5301 97.2407C55.2704 96.9956 54.8646 96.9956 54.6048 97.2407L51.2599 100.397C51.1249 100.524 51.0483 100.701 51.0483 100.887Z" fill="#DAA32F"/>
+      <path d="M132.562 55.9351V10.9169H150.858C155.05 10.9169 158.299 11.9648 160.604 14.0607C162.993 16.2403 164.188 19.0068 164.188 22.3601C164.188 26.9709 162.092 30.2404 157.9 32.1685C163.391 34.2643 166.137 37.911 166.137 43.1087C166.137 46.7135 164.984 49.7314 162.679 52.1626C160.29 54.6776 156.999 55.9351 152.808 55.9351H132.562ZM138.284 30.2823H149.412C152.346 30.2823 154.526 29.7583 155.951 28.7104C157.586 27.4948 158.403 25.6505 158.403 23.1775C158.403 20.7044 157.586 18.8391 155.951 17.5816C154.526 16.5337 152.346 16.0098 149.412 16.0098H138.284V30.2823ZM176.226 10.9169V55.9351H171.07V10.9169H176.226Z" fill="#196443"/>
+    </svg>
+    <div class="bt-topbar-right">
+      <span class="bt-user-name" id="bt-user-lbl">Anantha R.</span>
+      <div class="bt-avatar-sm" id="bt-avatar-lbl">AR</div>
+      <button class="bt-signout" onclick="btLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="bt-cs-body">
+    <div class="bt-cs-eyebrow">Your Portfolio</div>
+    <div class="bt-cs-title" id="bt-greet">Good morning, Anantha.</div>
+    <div class="bt-cs-sub">Select a company to view its financial dashboard.</div>
+    <div class="bt-search-wrap">
+      <span class="bt-search-icon">🔍</span>
+      <input class="bt-search" type="text" placeholder="Search companies…" oninput="btFilter(this.value)">
+    </div>
+    <div class="bt-co-grid" id="bt-co-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     SCREEN 3 — DASHBOARD (original, unchanged)
+══════════════════════════════════ -->
+<div id="bt-dashboard-wrap">
+
+<!-- ══ SIDEBAR ══ -->
+<div class="sidebar">
+  <div class="logo-area">
+    <div class="logo-mark" id="dash-co-mark" style="background:#238D5F">TD</div>
+    <div>
+      <div class="logo-name" id="dash-co-name">Triffy Digital</div>
+      <div class="logo-sub">Bloomtree Advisors · FY26</div>
+    </div>
+  </div>
+
+  <!-- ── PERIOD SELECTOR ── -->
+  <div class="period-section">
+    <div class="period-section-label">Period</div>
+
+    <div class="fy-row">
+      <span class="fy-label">FY 2025–26</span>
+      <span class="fy-sub">Apr '25 – Mar '26</span>
+    </div>
+
+    <!-- MTD / QTD / YTD / Full Year -->
+    <div class="prow">
+      <div class="pb" data-mode="mtd" onclick="setMode('mtd',this)">MTD</div>
+      <div class="pb" data-mode="qtd" onclick="setMode('qtd',this)">QTD</div>
+      <div class="pb active" data-mode="ytd" onclick="setMode('ytd',this)">YTD</div>
+      <div class="pb" data-mode="fy" onclick="setMode('fy',this)">Full FY</div>
+    </div>
+
+    <!-- Quarter selector — all 4 -->
+    <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:5px;padding:0 2px">Quarter</div>
+    <div class="qrow">
+      <div class="qb" data-q="1" onclick="setQuarter(1,this)">Q1 Apr–Jun</div>
+      <div class="qb" data-q="2" onclick="setQuarter(2,this)">Q2 Jul–Sep</div>
+      <div class="qb active" data-q="3" onclick="setQuarter(3,this)">Q3 Oct–Dec</div>
+      <div class="qb partial" data-q="4" onclick="setQuarter(4,this)">Q4 Jan–Mar ●</div>
+    </div>
+
+    <!-- Month dropdown -->
+    <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:5px;padding:0 2px">Specific Month</div>
+    <select class="month-select" id="month-select" onchange="setMonth(this.value)">
+      <option value="">— All months —</option>
+      <optgroup label="Q1 FY26 (Apr–Jun 2025)">
+        <option value="1">Apr 2025</option>
+        <option value="2">May 2025</option>
+        <option value="3">Jun 2025</option>
+      </optgroup>
+      <optgroup label="Q2 FY26 (Jul–Sep 2025)">
+        <option value="4">Jul 2025</option>
+        <option value="5">Aug 2025</option>
+        <option value="6">Sep 2025</option>
+      </optgroup>
+      <optgroup label="Q3 FY26 (Oct–Dec 2025)">
+        <option value="7">Oct 2025</option>
+        <option value="8">Nov 2025</option>
+        <option value="9">Dec 2025</option>
+      </optgroup>
+      <optgroup label="Q4 FY26 (Jan–Mar 2026)">
+        <option value="10" selected>Jan 2026 ← Latest</option>
+        <option value="11" disabled>Feb 2026 — no data</option>
+        <option value="12" disabled>Mar 2026 — no data</option>
+      </optgroup>
+    </select>
+
+    <div class="active-period-pill" id="active-period-pill">
+      <div class="active-dot"></div>
+      <span id="active-period-text">YTD FY26 · Apr'25–Jan'26</span>
+    </div>
+  </div>
+
+  <div class="nav-section">Analytics</div>
+  <div class="nav-item active" data-page="overview" onclick="showPage('overview')"><span class="nav-icon">◈</span> Overview</div>
+  <div class="nav-item" data-page="revenue" onclick="showPage('revenue')"><span class="nav-icon">↗</span> Revenue &amp; Sales</div>
+  <div class="nav-item" data-page="working" onclick="showPage('working')"><span class="nav-icon">⇄</span> Working Capital</div>
+  <div class="nav-item" data-page="burn" onclick="showPage('burn')"><span class="nav-icon">▽</span> Burn &amp; Runway<span class="nav-badge">!</span></div>
+  <div class="nav-section">Finance</div>
+  <div class="nav-item" data-page="balance" onclick="showPage('balance')"><span class="nav-icon">⊞</span> Balance Sheet</div>
+  <div class="nav-item" data-page="compliance" onclick="showPage('compliance')"><span class="nav-icon">✓</span> Compliance</div>
+
+  <div class="nav-section">Account</div>
+  <div class="nav-item" onclick="btSwitchCompany()"><span class="nav-icon">⇄</span> Switch Company</div>
+  <div class="nav-item" onclick="btLogout()"><span class="nav-icon">→</span> Sign Out</div>
+
+  <div class="sidebar-footer">
+    <div class="sync-row"><div class="sync-dot"></div><div>Synced · Tally / Zoho<br>Last: 31 Jan 2026<br>Next: 28 Feb 2026</div></div>
+  </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="bc">Triffy Digital</span>
+      <span class="bc-sep">/</span>
+      <span class="bc-cur" id="breadcrumb">Overview</span>
+      <div class="topbar-period">
+        <div class="topbar-period-dot"></div>
+        <span id="topbar-period-label">YTD FY26 · Apr'25–Jan'26</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="bt-co-strip" onclick="btSwitchCompany()" title="Switch company">
+        <div class="bt-co-strip-dot"></div>
+        <span id="dash-co-strip">Triffy Digital</span> ⇄
+      </div>
+      <span class="as-of">Latest data: Jan 2026</span>
+      <div class="avatar" id="dash-avatar">TD</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+  <!-- ══════════ PAGE: OVERVIEW ══════════ -->
+  <div class="page active" id="page-overview">
+    <div class="page-header">
+      <div><div class="page-title">Executive Overview</div>
+      <div class="page-subtitle">Triffy Digital Pvt. Ltd. · All figures ₹ Lakhs unless noted</div></div>
+      <span class="page-tag" id="ov-tag">YTD FY26</span>
+    </div>
+
+    <!-- Period context banner -->
+    <div class="period-banner">
+      <div class="pb-mode"><span id="banner-mode">YTD</span></div>
+      <div class="pb-divider"></div>
+      <div class="pb-item"><div class="pb-item-label">Period</div><div class="pb-item-val" id="banner-period">Apr 2025 – Jan 2026</div></div>
+      <div class="pb-divider"></div>
+      <div class="pb-item"><div class="pb-item-label">Months</div><div class="pb-item-val" id="banner-months">10 months</div></div>
+      <div class="pb-divider"></div>
+      <div class="pb-item"><div class="pb-item-label">Quarter</div><div class="pb-item-val" id="banner-quarter">Q1–Q4 (partial)</div></div>
+      <div class="pb-divider"></div>
+      <div class="pb-item"><div class="pb-item-label">Data Status</div><div class="pb-item-val" style="color:var(--g2)">✓ Live · Jan 2026</div></div>
+    </div>
+
+    <!-- KPI row — dynamic -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Revenue</div>
+        <div class="kpi-value green" id="kpi-rev">₹5,017L</div>
+        <div class="kpi-delta" id="kpi-rev-d" class="up">YTD Apr'25–Jan'26</div>
+        <div class="kpi-note" id="kpi-rev-n">Output GST ÷ 18%</div>
+        <div class="kpi-sparkline"><canvas id="sp-rev"></canvas></div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="kpi-label">Total Burn</div>
+        <div class="kpi-value yellow" id="kpi-burn">₹1,043L</div>
+        <div class="kpi-delta down" id="kpi-burn-d">₹10.43Cr FY26 to date</div>
+        <div class="kpi-note" id="kpi-burn-n">Net P&L change</div>
+        <div class="kpi-sparkline"><canvas id="sp-burn"></canvas></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Liquid Reserves</div>
+        <div class="kpi-value green" id="kpi-liq">₹3,657L</div>
+        <div class="kpi-delta flat" id="kpi-liq-d">Jan'26 closing</div>
+        <div class="kpi-note" id="kpi-liq-n">Cash + MF + FD</div>
+        <div class="kpi-sparkline"><canvas id="sp-liq"></canvas></div>
+      </div>
+      <div class="kpi-card dark">
+        <div class="kpi-label">Runway</div>
+        <div class="kpi-value" id="kpi-rwy">28.6 mo</div>
+        <div class="kpi-delta flat" id="kpi-rwy-d">At Jan'26 burn rate</div>
+        <div class="kpi-note" id="kpi-rwy-n">Liquid ÷ monthly burn</div>
+        <div class="kpi-sparkline"><canvas id="sp-rwy"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Quarterly summary cards — all 4 quarters -->
+    <div class="qtr-grid" id="qtr-summary">
+      <div class="qtr-card" onclick="setQuarterFromCard(1)">
+        <div class="qtr-badge p-green pill">DONE</div>
+        <div class="qtr-label">Q1 FY26</div>
+        <div class="qtr-months">Apr – Jun 2025</div>
+        <div class="qtr-val">₹17L</div>
+        <div class="qtr-sub">Rev · Burn ₹361L</div>
+      </div>
+      <div class="qtr-card" onclick="setQuarterFromCard(2)">
+        <div class="qtr-badge p-green pill">DONE</div>
+        <div class="qtr-label">Q2 FY26</div>
+        <div class="qtr-months">Jul – Sep 2025</div>
+        <div class="qtr-val">₹3,117L</div>
+        <div class="qtr-sub">Rev · Burn ₹324L</div>
+      </div>
+      <div class="qtr-card" onclick="setQuarterFromCard(3)">
+        <div class="qtr-badge p-green pill">DONE</div>
+        <div class="qtr-label">Q3 FY26</div>
+        <div class="qtr-months">Oct – Dec 2025</div>
+        <div class="qtr-val">₹1,161L</div>
+        <div class="qtr-sub">Rev · Burn ₹348L</div>
+      </div>
+      <div class="qtr-card partial-q" onclick="setQuarterFromCard(4)">
+        <div class="qtr-badge p-yellow pill">PARTIAL</div>
+        <div class="qtr-label">Q4 FY26</div>
+        <div class="qtr-months">Jan 2026 (1/3 months)</div>
+        <div class="qtr-val" style="color:var(--y1)">₹722L</div>
+        <div class="qtr-sub">Rev · Burn ₹128L</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Revenue vs Burn — Monthly</div><div class="card-sub">₹L · highlighted months in selected period</div></div><span class="card-tag" id="ov-chart-tag">10M YTD</span></div>
+        <div style="height:190px"><canvas id="ov-rev-burn"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Liquid Reserves — Stacked</div><div class="card-sub">Cash · Mutual Funds · Fixed Deposits (₹L)</div></div></div>
+        <div style="height:190px"><canvas id="ov-liquid"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Full monthly table -->
+    <div class="card">
+      <div class="card-header"><div><div class="card-title">Monthly Snapshot — FY26</div><div class="card-sub">All 11 months · selected period highlighted in yellow</div></div><span class="card-tag" id="snap-tag">YTD highlighted</span></div>
+      <div class="scrollable">
+        <table class="tbl" id="snapshot-table">
+          <thead><tr>
+            <th>Metric</th>
+            <th class="num">Mar'25</th><th class="num">Apr'25</th><th class="num">May'25</th><th class="num">Jun'25</th>
+            <th class="num">Jul'25</th><th class="num">Aug'25</th><th class="num">Sep'25</th>
+            <th class="num">Oct'25</th><th class="num">Nov'25</th><th class="num">Dec'25</th>
+            <th class="num">Jan'26</th>
+          </tr></thead>
+          <tbody id="snap-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /overview -->
+
+  <!-- ══════════ PAGE: REVENUE ══════════ -->
+  <div class="page" id="page-revenue">
+    <div class="page-header">
+      <div><div class="page-title">Revenue &amp; Sales</div>
+      <div class="page-subtitle">Output GST derived · Debtor movements · GMV indicators</div></div>
+      <span class="page-tag" id="rev-tag">FY26</span>
+    </div>
+    <div class="period-banner">
+      <div class="pb-mode"><span id="rev-banner-mode">YTD</span></div>
+      <div class="pb-divider"></div>
+      <div class="pb-item"><div class="pb-item-label">Period Revenue</div><div class="pb-item-val" id="rev-banner-rev">₹5,017L</div></div>
+      <div class="pb-divider"></div>
+      <div class="pb-item"><div class="pb-item-label">Period</div><div class="pb-item-val" id="rev-banner-period">Apr'25 – Jan'26</div></div>
+      <div class="pb-divider"></div>
+      <div class="pb-item"><div class="pb-item-label">Peak Month</div><div class="pb-item-val">Sep'25 · ₹1,694L</div></div>
+      <div class="pb-divider"></div>
+      <div class="pb-item"><div class="pb-item-label">Avg / Month</div><div class="pb-item-val" id="rev-banner-avg">₹502L</div></div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Period Revenue</div><div class="kpi-value green" id="rev-k1">₹5,017L</div><div class="kpi-delta up" id="rev-k1d">YTD total</div></div>
+      <div class="kpi-card yellow"><div class="kpi-label">Q2 (Best Quarter)</div><div class="kpi-value yellow">₹3,117L</div><div class="kpi-delta up">62% of YTD revenue</div></div>
+      <div class="kpi-card"><div class="kpi-label">Jan'26 Output GST</div><div class="kpi-value green">₹130L</div><div class="kpi-delta up">▲ 141% vs Dec ₹54L</div></div>
+      <div class="kpi-card dark"><div class="kpi-label">Largest Debtor</div><div class="kpi-value">Flipkart</div><div class="kpi-delta flat">₹548L in Jan'26</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Monthly Revenue</div><div class="card-sub">Implied from Output GST ÷ 18% (₹L)</div></div><span class="card-tag" id="rev-chart-tag">YTD</span></div>
+        <div style="height:190px"><canvas id="rev-trend"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Output GST — IGST vs SGST/CGST</div><div class="card-sub">₹L stacked by component</div></div></div>
+        <div style="height:190px"><canvas id="gst-breakdown"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Debtor Movements by Customer</div><div class="card-sub">Outstanding receivables (₹L)</div></div></div>
+        <div style="height:190px"><canvas id="debtor-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Quarterly Revenue — FY26</div><div class="card-sub">All 4 quarters · Q4 partial</div></div></div>
+        <div style="height:190px"><canvas id="qtr-rev-chart"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Customer Concentration — Jan'26</div><div class="card-sub">₹1,020L total debtors</div></div></div>
+        <div style="height:170px"><canvas id="cust-conc"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Revenue Month Heatmap</div><div class="card-sub">Output GST vs monthly average</div></div></div>
+        <table class="heatmap" style="margin-top:4px">
+          <tr><th style="text-align:left">Month</th><th>Quarter</th><th>GST (₹L)</th><th>Rev (₹L)</th><th>vs Avg</th></tr>
+          <tr><td class="heat-label">Apr'25</td><td class="heat-0">Q1</td><td class="heat-0">0</td><td class="heat-0">—</td><td class="heat-0">—</td></tr>
+          <tr><td class="heat-label">May'25</td><td class="heat-0">Q1</td><td class="heat-1">3</td><td class="heat-1">17</td><td class="heat-1">▼ Low</td></tr>
+          <tr><td class="heat-label">Jun'25</td><td class="heat-0">Q1</td><td class="heat-0">0</td><td class="heat-0">—</td><td class="heat-0">—</td></tr>
+          <tr><td class="heat-label">Jul'25</td><td class="heat-0">Q2</td><td class="heat-3">185</td><td class="heat-3">1,028</td><td class="heat-3">▲ High</td></tr>
+          <tr><td class="heat-label">Aug'25</td><td class="heat-0">Q2</td><td class="heat-2">71</td><td class="heat-2">394</td><td class="heat-2">▲ Mid</td></tr>
+          <tr><td class="heat-label">Sep'25</td><td class="heat-0">Q2</td><td class="heat-3">305</td><td class="heat-3">1,694</td><td class="heat-3">▲ Peak</td></tr>
+          <tr><td class="heat-label">Oct'25</td><td class="heat-0">Q3</td><td class="heat-2">139</td><td class="heat-2">772</td><td class="heat-2">▲ Mid</td></tr>
+          <tr><td class="heat-label">Nov'25</td><td class="heat-0">Q3</td><td class="heat-1">16</td><td class="heat-1">89</td><td class="heat-1">▼ Low</td></tr>
+          <tr><td class="heat-label">Dec'25</td><td class="heat-0">Q3</td><td class="heat-1">54</td><td class="heat-1">300</td><td class="heat-1">▼ Low</td></tr>
+          <tr><td class="heat-label heat-cur">Jan'26</td><td class="heat-0">Q4</td><td class="heat-3 heat-cur">130</td><td class="heat-3 heat-cur">722</td><td class="heat-3 heat-cur">▲ High</td></tr>
+        </table>
+      </div>
+    </div>
+  </div><!-- /revenue -->
+
+  <!-- ══════════ PAGE: WORKING CAPITAL ══════════ -->
+  <div class="page" id="page-working">
+    <div class="page-header">
+      <div><div class="page-title">Working Capital</div>
+      <div class="page-subtitle">Debtors · Creditors · Inventory · NWC cycle</div></div>
+      <span class="page-tag">FY26</span>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Sundry Debtors</div><div class="kpi-value green">₹1,020L</div><div class="kpi-delta up">▲ 265% vs Dec</div><div class="kpi-note">Flipkart ₹548L · 54%</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Sundry Creditors</div><div class="kpi-value red">₹1,514L</div><div class="kpi-delta down">▲ 223% vs Dec</div><div class="kpi-note">Dixon ₹1,208L · 80% ⚠</div></div>
+      <div class="kpi-card yellow"><div class="kpi-label">Net Working Capital</div><div class="kpi-value yellow">−₹494L</div><div class="kpi-delta down">Creditor-funded</div><div class="kpi-note">Debtors − Creditors</div></div>
+      <div class="kpi-card"><div class="kpi-label">Inventory</div><div class="kpi-value green">₹1,013L</div><div class="kpi-delta down">▲ 168% vs Dec</div><div class="kpi-note">Largest build yet</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Debtors vs Creditors</div><div class="card-sub">With NWC trend line (₹L)</div></div></div>
+        <div style="height:190px"><canvas id="wc-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Inventory Build-up</div><div class="card-sub">₹L · Jan'26 at all-time high</div></div></div>
+        <div style="height:190px"><canvas id="inv-chart"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Debtor Mix — Jan 2026</div></div></div>
+        <div class="prog-row" style="margin-top:8px"><div class="prog-top"><span>Flipkart India</span><span class="prog-val">₹548L · 54%</span></div><div class="prog-bg"><div class="prog-fill" style="width:54%;background:var(--g2)"></div></div></div>
+        <div class="prog-row"><div class="prog-top"><span>Clicktech Retail</span><span class="prog-val">₹278L · 27%</span></div><div class="prog-bg"><div class="prog-fill" style="width:27%;background:var(--g3)"></div></div></div>
+        <div class="prog-row"><div class="prog-top"><span>Dawntech Electronics</span><span class="prog-val">₹98L · 10%</span></div><div class="prog-bg"><div class="prog-fill" style="width:10%;background:var(--y2)"></div></div></div>
+        <div class="prog-row"><div class="prog-top"><span>3S Touch Solutions</span><span class="prog-val">₹86L · 8%</span></div><div class="prog-bg"><div class="prog-fill" style="width:8%;background:var(--y1)"></div></div></div>
+        <div class="prog-row"><div class="prog-top"><span>Others</span><span class="prog-val">₹10L · 1%</span></div><div class="prog-bg"><div class="prog-fill" style="width:1%;background:var(--muted)"></div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Creditor Mix — Jan 2026</div></div></div>
+        <div class="prog-row" style="margin-top:8px"><div class="prog-top"><span>Dixon Technologies</span><span class="prog-val" style="color:var(--r2)">₹1,208L · 80% ⚠</span></div><div class="prog-bg"><div class="prog-fill" style="width:80%;background:var(--r2)"></div></div></div>
+        <div class="prog-row"><div class="prog-top"><span>Pacific Cyber Tech</span><span class="prog-val">₹204L · 13%</span></div><div class="prog-bg"><div class="prog-fill" style="width:13%;background:var(--r1)"></div></div></div>
+        <div class="prog-row"><div class="prog-top"><span>Google India</span><span class="prog-val">₹23L · 2%</span></div><div class="prog-bg"><div class="prog-fill" style="width:2%;background:var(--y2)"></div></div></div>
+        <div class="prog-row"><div class="prog-top"><span>Facebook India</span><span class="prog-val">₹18L · 1%</span></div><div class="prog-bg"><div class="prog-fill" style="width:1%;background:var(--y1)"></div></div></div>
+        <div class="prog-row"><div class="prog-top"><span>Amazon + Others</span><span class="prog-val">₹61L · 4%</span></div><div class="prog-bg"><div class="prog-fill" style="width:4%;background:var(--muted)"></div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div><div class="card-title">Working Capital — Full Monthly Table</div></div></div>
+      <div class="scrollable"><table class="tbl"><thead><tr><th>Month</th><th>Quarter</th><th class="num">Debtors</th><th class="num">Creditors</th><th class="num">NWC</th><th class="num">Inventory</th><th class="num">Advances</th><th>Status</th></tr></thead><tbody id="wc-tbody"></tbody></table></div>
+    </div>
+  </div><!-- /working -->
+
+  <!-- ══════════ PAGE: BURN ══════════ -->
+  <div class="page" id="page-burn">
+    <div class="page-header">
+      <div><div class="page-title">Burn &amp; Runway</div>
+      <div class="page-subtitle">Monthly P&L burn · Salary · Runway scenarios</div></div>
+      <span class="page-tag">FY26</span>
+    </div>
+    <div class="period-banner">
+      <div class="pb-mode"><span id="burn-banner-mode">YTD</span></div>
+      <div class="pb-divider"></div>
+      <div class="pb-item"><div class="pb-item-label">Period Burn</div><div class="pb-item-val" id="burn-banner-total" style="color:var(--r2)">₹1,043L</div></div>
+      <div class="pb-divider"></div>
+      <div class="pb-item"><div class="pb-item-label">Avg Monthly Burn</div><div class="pb-item-val" id="burn-banner-avg">₹116L/mo</div></div>
+      <div class="pb-divider"></div>
+      <div class="pb-item"><div class="pb-item-label">Jan'26 Burn</div><div class="pb-item-val" style="color:var(--r2)">₹128L</div></div>
+      <div class="pb-divider"></div>
+      <div class="pb-item"><div class="pb-item-label">Runway (Jan)</div><div class="pb-item-val" style="color:var(--g2)">28.6 months</div></div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card red"><div class="kpi-label">Jan'26 Burn</div><div class="kpi-value red">₹128L</div><div class="kpi-delta down">▲ 44% vs Dec ₹89L</div></div>
+      <div class="kpi-card yellow"><div class="kpi-label">YTD Burn</div><div class="kpi-value yellow">₹1,043L</div><div class="kpi-delta down">₹10.43Cr in 10 months</div></div>
+      <div class="kpi-card"><div class="kpi-label">Runway</div><div class="kpi-value green">28.6 mo</div><div class="kpi-delta up">Comfortable buffer</div></div>
+      <div class="kpi-card dark"><div class="kpi-label">Accum. Loss</div><div class="kpi-value">₹15.53Cr</div><div class="kpi-delta down">From ₹3.92Cr Mar'25</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Monthly Burn</div><div class="card-sub">Net P&L change (₹L) · red = above ₹120L</div></div></div>
+        <div style="height:190px"><canvas id="burn-trend"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Runway Trend</div><div class="card-sub">Liquid ÷ monthly burn (months)</div></div></div>
+        <div style="height:190px"><canvas id="runway-trend"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Accumulated P&L Loss</div><div class="card-sub">Cumulative since Mar'25 (₹Cr)</div></div></div>
+        <div style="height:170px"><canvas id="accum-loss"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Salary Burn Trend</div><div class="card-sub">Estimated from TDS data (₹L)</div></div></div>
+        <div style="height:170px"><canvas id="salary-trend"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-3 mb12">
+      <div style="background:var(--g5);border:1px solid var(--g4);border-radius:8px;padding:16px;text-align:center">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--g1);font-weight:700;margin-bottom:8px">Bear (+30% burn)</div>
+        <div style="font-size:38px;font-weight:700;font-family:var(--mono);color:var(--g2)">22.0</div>
+        <div style="font-size:11px;color:var(--mid);margin-top:4px">months · ₹166L/mo</div>
+      </div>
+      <div style="background:var(--ink);border-radius:8px;padding:16px;text-align:center">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:#9db4a8;font-weight:700;margin-bottom:8px">Base Case</div>
+        <div style="font-size:38px;font-weight:700;font-family:var(--mono);color:#fff">28.6</div>
+        <div style="font-size:11px;color:#9db4a8;margin-top:4px">months · ₹128L/mo</div>
+      </div>
+      <div style="background:var(--g5);border:1px solid var(--g4);border-radius:8px;padding:16px;text-align:center">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--g1);font-weight:700;margin-bottom:8px">Bull (−20% burn)</div>
+        <div style="font-size:38px;font-weight:700;font-family:var(--mono);color:var(--g1)">35.7</div>
+        <div style="font-size:11px;color:var(--mid);margin-top:4px">months · ₹102L/mo</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div><div class="card-title">Burn Detail Table</div></div></div>
+      <table class="tbl"><thead><tr><th>Month</th><th>Quarter</th><th class="num">Burn (₹L)</th><th class="num">Salary Est.</th><th class="num">Liquid (₹L)</th><th class="num">Runway (mo)</th><th class="num">Accum Loss</th><th>Level</th></tr></thead>
+      <tbody id="burn-tbody"></tbody></table>
+    </div>
+  </div><!-- /burn -->
+
+  <!-- ══════════ PAGE: BALANCE SHEET ══════════ -->
+  <div class="page" id="page-balance">
+    <div class="page-header">
+      <div><div class="page-title">Balance Sheet</div>
+      <div class="page-subtitle">Assets · Liabilities · Shareholders' Fund · Mar'25–Jan'26</div></div>
+      <span class="page-tag">Jan 2026</span>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Total Assets</div><div class="kpi-value green">₹68.34Cr</div><div class="kpi-delta up">▲ 17.3% vs Dec</div></div>
+      <div class="kpi-card yellow"><div class="kpi-label">Mutual Funds</div><div class="kpi-value yellow">₹23.2Cr</div><div class="kpi-delta down">▼ 15.1% vs Dec</div></div>
+      <div class="kpi-card"><div class="kpi-label">Fixed Deposits</div><div class="kpi-value green">₹13.14Cr</div><div class="kpi-delta flat">→ 4 months stable</div></div>
+      <div class="kpi-card dark"><div class="kpi-label">Net Shareholders' Fund</div><div class="kpi-value">₹44.98Cr</div><div class="kpi-delta flat">After accum. loss</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Total Assets — MoM</div><div class="card-sub">₹Cr · Oct'25 jump = Series A closing</div></div></div>
+        <div style="height:190px"><canvas id="bs-assets"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Asset Mix — Jan 2026</div><div class="card-sub">₹68.34Cr composition</div></div></div>
+        <div style="height:190px"><canvas id="bs-mix"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-3-2">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Mutual Fund Portfolio</div><div class="card-sub">Fund-wise (₹Cr) · MoM</div></div></div>
+        <div style="height:190px"><canvas id="mf-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Shareholders' Fund</div></div></div>
+        <div style="margin-top:8px">
+          <div class="stat-row"><span class="stat-key">Equity Share Capital</span><span class="stat-val">₹5.0L</span></div>
+          <div class="stat-row"><span class="stat-key">Preference Share Capital</span><span class="stat-val">₹30.8L</span></div>
+          <div class="stat-row"><span class="stat-key">Securities Premium</span><span class="stat-val" style="color:var(--g2)">₹58.96Cr</span></div>
+          <div class="stat-row"><span class="stat-key">ESOP Outstanding</span><span class="stat-val">₹1.07Cr</span></div>
+          <div class="stat-row"><span class="stat-key">Accumulated Loss</span><span class="stat-val" style="color:var(--r2)">(₹15.53Cr)</span></div>
+          <div class="stat-row" style="border-top:2px solid var(--line);margin-top:4px;padding-top:8px"><span class="stat-key" style="font-weight:700;color:var(--ink)">Net Fund</span><span class="stat-val" style="color:var(--g2);font-size:15px">₹44.98Cr</span></div>
+        </div>
+        <div style="margin-top:12px;font-size:11px;color:var(--mid);line-height:1.7;background:var(--surface);padding:10px;border-radius:6px">
+          <strong style="color:var(--ink)">Investors:</strong> 3one4 Capital + Stellaris · Jun 2024<br>
+          <strong style="color:var(--ink)">Debt:</strong> Alteria NCD ₹26L at 13.3% p.a.<br>
+          <strong style="color:var(--ink)">Sec. Premium jump:</strong> Oct'25 (₹35.5→₹58.96Cr)
+        </div>
+      </div>
+    </div>
+  </div><!-- /balance -->
+
+  <!-- ══════════ PAGE: COMPLIANCE ══════════ -->
+  <div class="page" id="page-compliance">
+    <div class="page-header">
+      <div><div class="page-title">Compliance</div>
+      <div class="page-subtitle">GST · TDS · PF · ROC · Statutory filing status</div></div>
+      <span class="page-tag">FY 2025–26</span>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Score</div><div class="kpi-value green">82/100</div><div class="kpi-delta flat">→ Jan GST overdue</div></div>
+      <div class="kpi-card yellow"><div class="kpi-label">Output GST Jan</div><div class="kpi-value yellow">₹130L</div><div class="kpi-delta down">GSTR-3B due 20 Feb</div></div>
+      <div class="kpi-card"><div class="kpi-label">TDS Salary (Q3)</div><div class="kpi-value green">₹7.16L</div><div class="kpi-delta up">Filed ✓</div></div>
+      <div class="kpi-card dark"><div class="kpi-label">PF Payable Jan</div><div class="kpi-value">₹1.20L</div><div class="kpi-delta flat">ECR due 15 Feb</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">GST Return Status</div></div></div>
+        <table class="tbl"><thead><tr><th>Return</th><th>Period</th><th>Due</th><th>Filed</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>GSTR-3B</td><td>Oct'25</td><td>20 Nov</td><td>18 Nov</td><td><span class="pill p-green">FILED</span></td></tr>
+          <tr><td>GSTR-1</td><td>Oct'25</td><td>11 Nov</td><td>10 Nov</td><td><span class="pill p-green">FILED</span></td></tr>
+          <tr><td>GSTR-3B</td><td>Nov'25</td><td>20 Dec</td><td>19 Dec</td><td><span class="pill p-green">FILED</span></td></tr>
+          <tr><td>GSTR-1</td><td>Nov'25</td><td>11 Dec</td><td>10 Dec</td><td><span class="pill p-green">FILED</span></td></tr>
+          <tr><td>GSTR-3B</td><td>Dec'25</td><td>20 Jan</td><td>18 Jan</td><td><span class="pill p-green">FILED</span></td></tr>
+          <tr><td>GSTR-3B</td><td>Jan'26</td><td>20 Feb</td><td>—</td><td><span class="pill p-red">OVERDUE</span></td></tr>
+          <tr><td>GSTR-1</td><td>Jan'26</td><td>11 Feb</td><td>—</td><td><span class="pill p-red">OVERDUE</span></td></tr>
+          <tr><td>GSTR-3B</td><td>Feb'26</td><td>20 Mar</td><td>—</td><td><span class="pill p-yellow">UPCOMING</span></td></tr>
+        </tbody></table>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">TDS &amp; PF — FY26</div></div></div>
+        <table class="tbl"><thead><tr><th>Head</th><th>Q2</th><th>Q3</th><th>Jan'26</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Salary (192)</td><td class="num">₹4.3L</td><td class="num">₹7.2L</td><td class="num">₹7.2L</td><td><span class="pill p-green">FILED</span></td></tr>
+          <tr><td>Prof Fees (194J)</td><td class="num">₹99K</td><td class="num">—</td><td class="num">₹90K</td><td><span class="pill p-green">FILED</span></td></tr>
+          <tr><td>Rent (194IB)</td><td class="num">₹37K</td><td class="num">₹27K</td><td class="num">₹26K</td><td><span class="pill p-green">FILED</span></td></tr>
+          <tr><td>Subcontract (194C)</td><td class="num">—</td><td class="num">₹4.1L</td><td class="num">₹5.2L</td><td><span class="pill p-green">FILED</span></td></tr>
+          <tr><td>Foreign (195)</td><td class="num">—</td><td class="num">₹1.1L</td><td class="num">₹34K</td><td><span class="pill p-green">FILED</span></td></tr>
+          <tr><td>PF (ECR)</td><td class="num">₹1.27L</td><td class="num">₹1.22L</td><td class="num">₹1.20L</td><td><span class="pill p-yellow">DUE</span></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Output GST Trend</div></div></div>
+        <div style="height:170px"><canvas id="gst-trend-comp"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">ROC / MCA Filings</div></div></div>
+        <table class="tbl"><thead><tr><th>Form</th><th>Description</th><th>Due</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>MGT-7A</td><td>Annual Return FY25</td><td>Nov 30</td><td><span class="pill p-green">FILED</span></td></tr>
+          <tr><td>AOC-4</td><td>Financials FY25</td><td>Oct 30</td><td><span class="pill p-green">FILED</span></td></tr>
+          <tr><td>DIR-3 KYC</td><td>Director KYC</td><td>Sep 30</td><td><span class="pill p-green">FILED</span></td></tr>
+          <tr><td>DPT-3</td><td>Deposits Return</td><td>Jun 30, 26</td><td><span class="pill p-blue">UPCOMING</span></td></tr>
+          <tr><td>MSME-1</td><td>MSME Dues</td><td>Apr 30, 26</td><td><span class="pill p-blue">UPCOMING</span></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+  </div><!-- /compliance -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+/* ══════════════════════════════════════
+   DATA — All from MIS_Jan_26 balance sheet
+   Index 0=Mar'25 ... 10=Jan'26
+══════════════════════════════════════ */
+const M  = ["Mar'25","Apr'25","May'25","Jun'25","Jul'25","Aug'25","Sep'25","Oct'25","Nov'25","Dec'25","Jan'26"];
+const MS = ["M'25","A'25","My","J'25","Jl","Au","S'25","O'25","N'25","D'25","J'26"];
+
+// Quarter mapping (FY26: Q1=Apr-Jun, Q2=Jul-Sep, Q3=Oct-Dec, Q4=Jan-Mar)
+// Index in our array: 0=Mar25(prev FY), 1=Apr25(Q1), 2=May25(Q1), 3=Jun25(Q1),
+//                    4=Jul25(Q2), 5=Aug25(Q2), 6=Sep25(Q2),
+//                    7=Oct25(Q3), 8=Nov25(Q3), 9=Dec25(Q3),
+//                    10=Jan26(Q4)
+const QUARTER_MAP = [null,1,1,1,2,2,2,3,3,3,4]; // null = Mar25 (prior FY baseline)
+const QUARTER_INDICES = { 1:[1,2,3], 2:[4,5,6], 3:[7,8,9], 4:[10] };
+const QUARTER_LABELS  = { 1:"Q1 FY26 · Apr–Jun'25", 2:"Q2 FY26 · Jul–Sep'25", 3:"Q3 FY26 · Oct–Dec'25", 4:"Q4 FY26 · Jan'26+" };
+const QUARTER_PERIODS = { 1:"Apr – Jun 2025", 2:"Jul – Sep 2025", 3:"Oct – Dec 2025", 4:"Jan 2026 (partial)" };
+
+const D = {
+  rev:      [0,    0,   17,   0, 1028, 394, 1694, 772,  89, 300,  722],
+  burn:     [0,  118,  124, 119,   70, 114,  140, 135, 124,  89,  128],
+  cash:     [23.4,4.6,892.5,14.1,5.5,352,18.3,53.4,76.1,198,23.1],
+  mf:       [19.96,18.88,17.13,13.93,10.07,12.99,8.77,40.05,34.43,27.34,23.20],
+  fd:       [6.60,6.60,6.60,11.64,11.64,11.64,11.64,13.14,13.14,13.14,13.14],
+  debtors:  [4,1347,553,28,874,395,1778,1268,406,279,1020],
+  creditors:[34,543,571,60,443,614,1406,1638,618,468,1514],
+  inventory:[2,18,23,26,370,335,660,362,371,378,1013],
+  advances: [540,80,5,612,121,121,181,284,318,612,625],
+  pl_loss:  [3.92,5.10,6.34,7.53,8.23,9.37,10.77,12.12,13.36,14.25,15.53],
+  salary:   [0,61.4,61.4,61.4,61.4,61.4,61.4,102.9,102.9,102.9,102.9],
+  igst_out: [0,0,2,0,184,66,298,136,14,50,64],
+  sgst_out: [0,0,0.6,0,0.6,2.5,3.3,1.2,1.0,1.8,33.2],
+  cgst_out: [0,0,0.6,0,0.6,2.5,3.3,1.2,1.0,1.8,33.2],
+  gst_out:  [0,0,3,0,185,71,305,139,16,54,130],
+  total_assets:[32.93,43.08,39.12,33.18,38.79,39.02,51.62,75.91,61.65,58.27,68.34],
+  d_dawntech: [0,1320,516,1,777,64,1451,1084,225,58,98],
+  d_clicktech:[0,0,0,0,64,276,241,104,101,126,278],
+  d_flipkart: [0,0,0,0,0,0,0,0,0,0,548],
+  d_touch3s:  [4,28,37,26,34,56,87,79,79,94,86],
+  c_dixon:    [3,510,527,0,383,383,991,1234,153,0,1208],
+  c_pacific:  [0,0,0,0,0,115,211,306,203,165,204],
+};
+D.liquid = D.cash.map((c,i) => Math.round(c + D.mf[i]*100 + D.fd[i]*100));
+D.nwc    = D.debtors.map((d,i) => d - D.creditors[i]);
+D.runway = D.burn.map((b,i) => b > 0 ? Math.round(D.liquid[i]/b*10)/10 : 0);
+
+/* ══ STATE ══ */
+let STATE = { mode:'ytd', quarter:null, month:null };
+
+/* ══ PERIOD COMPUTATION ══ */
+function getIndices() {
+  const m = STATE.mode, q = STATE.quarter, mo = STATE.month;
+  if (mo !== null) return [mo]; // specific month
+  if (m === 'mtd') return [10]; // latest month = Jan'26
+  if (m === 'qtd' || (m === 'fy' && q)) {
+    const qNum = q || 4;
+    return QUARTER_INDICES[qNum];
+  }
+  if (m === 'ytd') return [1,2,3,4,5,6,7,8,9,10]; // Apr25-Jan26
+  if (m === 'fy')  return [1,2,3,4,5,6,7,8,9,10]; // same until Mar data arrives
+  return [1,2,3,4,5,6,7,8,9,10];
+}
+
+function sumPeriod(arr) { return getIndices().reduce((s,i) => s + (arr[i]||0), 0); }
+function lastVal(arr)   { const idx = getIndices(); return arr[idx[idx.length-1]] || 0; }
+
+function getPeriodLabel() {
+  const m = STATE.mode, q = STATE.quarter, mo = STATE.month;
+  if (mo !== null) return M[mo];
+  if (m === 'mtd') return "Jan 2026 (MTD)";
+  if (m === 'qtd' || (m === 'fy' && q)) return QUARTER_PERIODS[q||4];
+  if (m === 'ytd') return "Apr 2025 – Jan 2026";
+  if (m === 'fy')  return "Apr 2025 – Jan 2026 (partial)";
+  return "";
+}
+
+function getModeLabel() {
+  const m = STATE.mode, q = STATE.quarter, mo = STATE.month;
+  if (mo !== null) return M[mo];
+  if (m === 'mtd') return "MTD";
+  if (m === 'qtd') return q ? `Q${q} QTD` : "QTD";
+  if (m === 'ytd') return "YTD";
+  if (m === 'fy')  return q ? `Q${q}` : "Full FY";
+  return "";
+}
+
+/* ══ UPDATE ALL UI ══ */
+function updateAll() {
+  const idx    = getIndices();
+  const modeL  = getModeLabel();
+  const periodL= getPeriodLabel();
+  const months = idx.length;
+
+  // Active period pill + topbar
+  document.getElementById('active-period-text').textContent = `${modeL} · ${periodL}`;
+  document.getElementById('topbar-period-label').textContent = `${modeL} · ${periodL}`;
+
+  // Banner
+  document.getElementById('banner-mode').textContent    = modeL;
+  document.getElementById('banner-period').textContent  = periodL;
+  document.getElementById('banner-months').textContent  = months + (months===1?' month':' months');
+  document.getElementById('banner-quarter').textContent = STATE.quarter ? `Q${STATE.quarter} FY26` : (STATE.month!==null ? M[STATE.month] : 'Q1–Q4');
+
+  // Overview KPIs
+  const totRev  = sumPeriod(D.rev);
+  const totBurn = sumPeriod(D.burn);
+  const liq     = lastVal(D.liquid);
+  const rwy     = lastVal(D.runway);
+  document.getElementById('kpi-rev').textContent   = '₹' + totRev.toLocaleString() + 'L';
+  document.getElementById('kpi-burn').textContent  = '₹' + totBurn.toLocaleString() + 'L';
+  document.getElementById('kpi-liq').textContent   = '₹' + liq.toLocaleString() + 'L';
+  document.getElementById('kpi-rwy').textContent   = rwy + ' mo';
+  document.getElementById('kpi-rev-d').textContent  = periodL;
+  document.getElementById('kpi-burn-d').textContent = months + ' month total';
+  document.getElementById('kpi-liq-d').textContent  = 'Closing ' + M[idx[idx.length-1]];
+  document.getElementById('kpi-rwy-d').textContent  = 'At ' + M[idx[idx.length-1]] + ' rate';
+  document.getElementById('ov-tag').textContent     = modeL;
+  document.getElementById('ov-chart-tag').textContent = months + 'M ' + modeL;
+  document.getElementById('snap-tag').textContent   = modeL + ' highlighted';
+
+  // Revenue page
+  const avgRev = months > 0 ? Math.round(totRev/months) : 0;
+  document.getElementById('rev-tag').textContent          = modeL;
+  document.getElementById('rev-banner-mode').textContent  = modeL;
+  document.getElementById('rev-banner-rev').textContent   = '₹' + totRev.toLocaleString() + 'L';
+  document.getElementById('rev-banner-period').textContent= periodL;
+  document.getElementById('rev-banner-avg').textContent   = '₹' + avgRev + 'L';
+  document.getElementById('rev-k1').textContent           = '₹' + totRev.toLocaleString() + 'L';
+  document.getElementById('rev-k1d').textContent          = modeL + ' total · ' + months + ' months';
+  document.getElementById('rev-chart-tag').textContent    = modeL;
+
+  // Burn page
+  const avgBurn = months > 0 ? Math.round(totBurn/months) : 0;
+  document.getElementById('burn-banner-mode').textContent  = modeL;
+  document.getElementById('burn-banner-total').textContent = '₹' + totBurn.toLocaleString() + 'L';
+  document.getElementById('burn-banner-avg').textContent   = '₹' + avgBurn + 'L/mo';
+
+  // Highlight snapshot table rows
+  updateSnapshotTable(idx);
+  updateBurnTable(idx);
+  updateWCTable(idx);
+
+  // Update chart highlights
+  updateChartHighlights(idx);
+
+  // Quarter card highlights
+  document.querySelectorAll('.qtr-card').forEach(c => c.classList.remove('active-q'));
+  if (STATE.quarter) {
+    const cards = document.querySelectorAll('.qtr-card');
+    if (STATE.quarter <= cards.length) cards[STATE.quarter-1].classList.add('active-q');
+  }
+}
+
+/* ══ SNAPSHOT TABLE ══ */
+function buildSnapshotTable() {
+  const rows = [
+    { label:'Revenue (₹L)', key:'rev', fmt:v=>v||'—' },
+    { label:'Burn (₹L)',     key:'burn',fmt:v=>v||'—', style:'color:var(--r2)' },
+    { label:'Cash (₹L)',     key:'cash',fmt:v=>v.toFixed(1) },
+    { label:'MF (₹Cr)',      key:'mf',  fmt:v=>v.toFixed(2) },
+    { label:'FD (₹Cr)',      key:'fd',  fmt:v=>v.toFixed(2) },
+    { label:'Debtors (₹L)',  key:'debtors', fmt:v=>v.toLocaleString() },
+    { label:'Creditors (₹L)',key:'creditors',fmt:v=>v.toLocaleString() },
+    { label:'Inventory (₹L)',key:'inventory',fmt:v=>v.toLocaleString() },
+    { label:'Accum Loss (₹Cr)',key:'pl_loss',fmt:v=>'('+v.toFixed(2)+')', style:'color:var(--r2)' },
+  ];
+  const tb = document.getElementById('snap-body');
+  tb.innerHTML = rows.map(r => `
+    <tr id="snap-row-${r.key}">
+      <td class="bold">${r.label}</td>
+      ${D[r.key].map((v,i) => `<td class="num snap-cell" data-idx="${i}" style="${r.style||''}">${r.fmt(v)}</td>`).join('')}
+    </tr>`).join('');
+}
+
+function updateSnapshotTable(activeIdx) {
+  document.querySelectorAll('.snap-cell').forEach(td => {
+    const i = parseInt(td.dataset.idx);
+    td.style.background = activeIdx.includes(i) ? 'var(--y4)' : '';
+    td.style.fontWeight = activeIdx.includes(i) ? '700' : '';
+  });
+}
+
+/* ══ BURN TABLE ══ */
+function buildBurnTable() {
+  const tb = document.getElementById('burn-tbody');
+  tb.innerHTML = M.map((m,i) => {
+    if (!D.burn[i]) return '';
+    const q = QUARTER_MAP[i];
+    const rwy = D.runway[i];
+    const rc = rwy > 24 ? 'var(--g2)' : rwy > 12 ? 'var(--y1)' : 'var(--r2)';
+    const lvl = D.burn[i]>130?`<span class="pill p-red">High</span>`:D.burn[i]>100?`<span class="pill p-yellow">Elevated</span>`:`<span class="pill p-green">Normal</span>`;
+    return `<tr class="burn-row" data-idx="${i}">
+      <td class="bold">${m}</td>
+      <td>${q ? `Q${q}` : '—'}</td>
+      <td class="num" style="color:var(--r2)">${D.burn[i]}</td>
+      <td class="num">${D.salary[i]||'—'}</td>
+      <td class="num">${D.liquid[i].toLocaleString()}</td>
+      <td class="num" style="color:${rc};font-weight:700">${rwy}</td>
+      <td class="num" style="color:var(--r1)">(${D.pl_loss[i].toFixed(2)})</td>
+      <td>${lvl}</td>
+    </tr>`;
+  }).join('');
+}
+function updateBurnTable(activeIdx) {
+  document.querySelectorAll('.burn-row').forEach(tr => {
+    const i = parseInt(tr.dataset.idx);
+    tr.style.background = activeIdx.includes(i) ? 'var(--y4)' : '';
+  });
+}
+
+/* ══ WC TABLE ══ */
+function buildWCTable() {
+  const tb = document.getElementById('wc-tbody');
+  tb.innerHTML = M.map((m,i) => {
+    const nwc = D.nwc[i];
+    const q = QUARTER_MAP[i];
+    const status = nwc >= 0 ? `<span class="pill p-green">Debtor-led</span>` : `<span class="pill p-red">Creditor-funded</span>`;
+    return `<tr class="wc-row" data-idx="${i}">
+      <td class="bold">${m}</td>
+      <td>${q ? `Q${q}` : '—'}</td>
+      <td class="num">${D.debtors[i].toLocaleString()}</td>
+      <td class="num">${D.creditors[i].toLocaleString()}</td>
+      <td class="num" style="color:${nwc>=0?'var(--g2)':'var(--r2)'};font-weight:700">${nwc>0?'+':''}${nwc.toLocaleString()}</td>
+      <td class="num">${D.inventory[i].toLocaleString()}</td>
+      <td class="num">${D.advances[i].toLocaleString()}</td>
+      <td>${status}</td>
+    </tr>`;
+  }).join('');
+}
+function updateWCTable(activeIdx) {
+  document.querySelectorAll('.wc-row').forEach(tr => {
+    const i = parseInt(tr.dataset.idx);
+    tr.style.background = activeIdx.includes(i) ? 'var(--y4)' : '';
+  });
+}
+
+/* ══ CHARTS ══ */
+const C = {g1:'#1a6b45',g2:'#238D5F',g3:'#3aaa78',g4:'#a8dfc5',g5:'#e8f7f0',
+           y1:'#c97a00',y2:'#f59e0b',y3:'#fcd34d',y4:'#fef3c7',
+           r1:'#b91c1c',r2:'#ef4444',grid:'#f0f4f0',ink:'#0f1c14',mid:'#6b7f74'};
+Chart.defaults.font.family = "'DM Sans',sans-serif";
+Chart.defaults.font.size = 10;
+Chart.defaults.color = C.mid;
+
+const gY = (fmt) => ({ grid:{color:C.grid}, ticks:{callback:fmt,font:{size:9}} });
+const gX = () => ({ grid:{display:false}, ticks:{font:{size:9}} });
+
+let CHARTS = {};
+
+function mkChart(id, cfg) {
+  if (CHARTS[id]) { CHARTS[id].destroy(); }
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  CHARTS[id] = new Chart(ctx, cfg);
+  return CHARTS[id];
+}
+
+function getBarColors(defaultColor, activeIdx) {
+  return MS.map((_,i) => activeIdx.includes(i) ? defaultColor : defaultColor+'44');
+}
+function getBorderColors(defaultColor, activeIdx) {
+  return MS.map((_,i) => activeIdx.includes(i) ? defaultColor : defaultColor+'66');
+}
+
+function updateChartHighlights(activeIdx) {
+  // Revenue vs Burn chart
+  mkChart('ov-rev-burn', { type:'bar', data:{ labels:MS, datasets:[
+    {label:'Revenue',data:D.rev,backgroundColor:getBarColors(C.g2,activeIdx),borderColor:getBorderColors(C.g2,activeIdx),borderWidth:1.5,borderRadius:3},
+    {label:'Burn',   data:D.burn,backgroundColor:getBarColors(C.r2,activeIdx),borderColor:getBorderColors(C.r2,activeIdx),borderWidth:1.5,borderRadius:3}
+  ]}, options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:12}}},
+    scales:{x:gX(),y:gY(v=>'₹'+v+'L')}} });
+
+  // Revenue trend page
+  mkChart('rev-trend', { type:'bar', data:{ labels:MS, datasets:[
+    {label:'Revenue (₹L)',data:D.rev,backgroundColor:getBarColors(C.g2,activeIdx),borderColor:getBorderColors(C.g2,activeIdx),borderWidth:1.5,borderRadius:4}
+  ]}, options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},scales:{x:gX(),y:gY(v=>'₹'+v+'L')}} });
+}
+
+function buildAllCharts() {
+  const activeIdx = getIndices();
+
+  // Sparklines
+  function sp(id,data,color){ mkChart(id,{type:'line',data:{labels:M,datasets:[{data,borderColor:color,borderWidth:1.5,pointRadius:0,fill:true,backgroundColor:color+'22',tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}}}); }
+  sp('sp-rev',D.rev,C.g2); sp('sp-burn',D.burn,C.r2); sp('sp-liq',D.liquid,C.g2); sp('sp-rwy',D.runway,C.ink);
+
+  // Liquid stack
+  mkChart('ov-liquid',{type:'bar',data:{labels:MS,datasets:[
+    {label:'Cash',data:D.cash,backgroundColor:C.g4,stack:'s'},
+    {label:'MF (×100)',data:D.mf.map(v=>v*100),backgroundColor:C.g2,stack:'s'},
+    {label:'FD (×100)',data:D.fd.map(v=>v*100),backgroundColor:C.g1,stack:'s'}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:8,font:{size:9}}}},
+    scales:{x:gX(),y:{stacked:true,...gY(v=>'₹'+v+'L')}}}});
+
+  // GST breakdown
+  mkChart('gst-breakdown',{type:'bar',data:{labels:MS,datasets:[
+    {label:'IGST',data:D.igst_out,backgroundColor:C.g2+'99',borderColor:C.g2,borderWidth:1,stack:'g'},
+    {label:'SGST',data:D.sgst_out,backgroundColor:C.g3+'99',borderColor:C.g3,borderWidth:1,stack:'g'},
+    {label:'CGST',data:D.cgst_out,backgroundColor:C.g4,borderColor:C.g4,borderWidth:1,stack:'g'}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:8,font:{size:9}}}},
+    scales:{x:gX(),y:{stacked:true,...gY(v=>'₹'+v+'L')}}}});
+
+  // Debtor chart
+  mkChart('debtor-chart',{type:'line',data:{labels:MS,datasets:[
+    {label:'Dawntech', data:D.d_dawntech, borderColor:C.g1,backgroundColor:'transparent',borderWidth:2,pointRadius:2,tension:.3},
+    {label:'Clicktech',data:D.d_clicktech,borderColor:C.g2,backgroundColor:'transparent',borderWidth:2,pointRadius:2,tension:.3},
+    {label:'Flipkart', data:D.d_flipkart, borderColor:C.y2,backgroundColor:'transparent',borderWidth:2,pointRadius:2,tension:.3},
+    {label:'3S Touch', data:D.d_touch3s,  borderColor:C.mid,backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,tension:.3}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:10,font:{size:9}}}},
+    scales:{x:gX(),y:gY(v=>'₹'+v+'L')}}});
+
+  // Quarterly revenue all 4
+  mkChart('qtr-rev-chart',{type:'bar',data:{labels:['Q1 Apr–Jun','Q2 Jul–Sep','Q3 Oct–Dec','Q4 Jan (partial)'],datasets:[
+    {data:[17,3117,1161,722],backgroundColor:[C.g4,C.g2,C.g3,C.y2],borderRadius:5,
+     borderColor:[C.g1,C.g1,C.g1,C.y1],borderWidth:1.5}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},scales:{x:gX(),y:gY(v=>'₹'+v+'L')}}});
+
+  // Customer concentration doughnut
+  mkChart('cust-conc',{type:'doughnut',data:{labels:['Flipkart','Clicktech','Dawntech','3S Touch','Others'],
+    datasets:[{data:[548,278,98,86,10],backgroundColor:[C.g1,C.g2,C.g3,C.y2,C.mid],borderWidth:0,hoverOffset:5}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{legend:{position:'right',labels:{boxWidth:9,padding:10,font:{size:9}}}}}});
+
+  // WC chart
+  mkChart('wc-chart',{type:'bar',data:{labels:MS,datasets:[
+    {label:'Debtors',  data:D.debtors,  backgroundColor:C.g2+'55',borderColor:C.g2,borderWidth:1.5,borderRadius:3},
+    {label:'Creditors',data:D.creditors,backgroundColor:C.r2+'55',borderColor:C.r2,borderWidth:1.5,borderRadius:3},
+    {label:'NWC',      data:D.nwc,type:'line',borderColor:C.ink,backgroundColor:'transparent',borderWidth:2,pointRadius:3,tension:.3}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:10,font:{size:9}}}},
+    scales:{x:gX(),y:gY(v=>'₹'+v+'L')}}});
+
+  // Inventory
+  mkChart('inv-chart',{type:'line',data:{labels:MS,datasets:[{label:'Inventory (₹L)',data:D.inventory,
+    borderColor:C.y1,backgroundColor:C.y3+'44',borderWidth:2,pointRadius:3,pointBackgroundColor:C.y1,fill:true,tension:.3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:gX(),y:gY(v=>'₹'+v+'L')}}});
+
+  // Burn trend
+  mkChart('burn-trend',{type:'bar',data:{labels:MS,datasets:[{label:'Burn (₹L)',data:D.burn,
+    backgroundColor:D.burn.map(v=>v>120?C.r2+'99':C.y2+'88'),borderColor:D.burn.map(v=>v>120?C.r2:C.y1),borderWidth:1.5,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:gX(),y:gY(v=>'₹'+v+'L')}}});
+
+  // Runway
+  mkChart('runway-trend',{type:'line',data:{labels:MS.slice(1),datasets:[{label:'Runway (mo)',data:D.runway.slice(1),
+    borderColor:C.g1,backgroundColor:C.g5,borderWidth:2.5,pointRadius:4,pointBackgroundColor:C.g1,fill:true,tension:.3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:gX(),y:gY(v=>v+'mo')}}});
+
+  // Accum loss
+  mkChart('accum-loss',{type:'line',data:{labels:MS,datasets:[{data:D.pl_loss,
+    borderColor:C.r2,backgroundColor:C.r2+'22',borderWidth:2,pointRadius:3,pointBackgroundColor:C.r2,fill:true,tension:.3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:gX(),y:gY(v=>'₹'+v+'Cr')}}});
+
+  // Salary
+  mkChart('salary-trend',{type:'line',data:{labels:MS,datasets:[{data:D.salary,
+    borderColor:C.ink,backgroundColor:C.ink+'11',borderWidth:2,pointRadius:3,pointBackgroundColor:C.ink,fill:true,tension:.3,stepped:true}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:gX(),y:gY(v=>'₹'+v+'L')}}});
+
+  // BS assets
+  mkChart('bs-assets',{type:'line',data:{labels:MS,datasets:[{data:D.total_assets,
+    borderColor:C.g2,backgroundColor:C.g2+'22',borderWidth:2.5,pointRadius:4,pointBackgroundColor:C.g2,fill:true,tension:.3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:gX(),y:gY(v=>'₹'+v+'Cr')}}});
+
+  // BS mix
+  mkChart('bs-mix',{type:'doughnut',data:{labels:['FD','Mutual Funds','Debtors','Advances','Other Current','Fixed Assets','Cash'],
+    datasets:[{data:[13.14,23.20,10.20,6.25,15.04,0.19,0.23],backgroundColor:[C.g1,C.g2,C.g3,C.y2,C.y1,C.mid,'#ccc'],borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+      plugins:{legend:{position:'right',labels:{boxWidth:9,padding:10,font:{size:9}}}}}});
+
+  // MF portfolio
+  mkChart('mf-chart',{type:'bar',data:{labels:MS,datasets:[
+    {label:'DSP', data:[8.12,8.12,7.93,4.73,3.74,3.94,2.71,8.92,6.60,5.51,5.51],backgroundColor:C.g1,stack:'mf'},
+    {label:'HDFC',data:[0,0,0,0,0,0,3.10,8.75,6.64,5.94,4.47],backgroundColor:C.g2,stack:'mf'},
+    {label:'ICICI',data:[3.80,2.92,2.40,2.40,0,0,0,7.00,7.30,5.22,4.43],backgroundColor:C.g3,stack:'mf'},
+    {label:'UTI', data:[8.04,7.84,6.81,6.81,6.34,9.05,2.96,7.67,6.20,5.95,4.77],backgroundColor:C.y2,stack:'mf'},
+    {label:'SBI', data:[0,0,0,0,0,0,0,7.70,7.70,4.72,4.03],backgroundColor:C.y1,stack:'mf'}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:8,font:{size:9}}}},
+    scales:{x:gX(),y:{stacked:true,...gY(v=>'₹'+v+'Cr')}}}});
+
+  // GST compliance trend
+  mkChart('gst-trend-comp',{type:'bar',data:{labels:MS,datasets:[
+    {label:'IGST',data:D.igst_out,backgroundColor:C.g2+'aa',stack:'g',borderRadius:3},
+    {label:'SGST',data:D.sgst_out,backgroundColor:C.g3+'aa',stack:'g',borderRadius:3},
+    {label:'CGST',data:D.cgst_out,backgroundColor:C.g4,stack:'g',borderRadius:3}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:8,font:{size:9}}}},
+    scales:{x:gX(),y:{stacked:true,...gY(v=>'₹'+v+'L')}}}});
+
+  // Initial highlights
+  updateChartHighlights(activeIdx);
+}
+
+/* ══ NAVIGATION ══ */
+const PAGE_LABELS = {overview:'Overview',revenue:'Revenue & Sales',working:'Working Capital',burn:'Burn & Runway',balance:'Balance Sheet',compliance:'Compliance'};
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.getElementById('breadcrumb').textContent = PAGE_LABELS[name]||name;
+  document.querySelectorAll('.nav-item[data-page]').forEach(n=>n.classList.remove('active'));
+  const t = document.querySelector(`.nav-item[data-page="${name}"]`);
+  if(t) t.classList.add('active');
+}
+
+/* ══ PERIOD CONTROLS ══ */
+function setMode(mode, el) {
+  STATE.mode = mode; STATE.month = null;
+  document.querySelectorAll('.pb[data-mode]').forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.getElementById('month-select').value = '';
+  // If QTD with no quarter set, default to latest (Q4)
+  if (mode === 'qtd' && !STATE.quarter) { STATE.quarter = 4; document.querySelector('.qb[data-q="4"]').classList.add('active'); }
+  updateAll();
+}
+
+function setQuarter(q, el) {
+  STATE.quarter = q; STATE.month = null;
+  document.querySelectorAll('.qb').forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.getElementById('month-select').value = '';
+  // Auto-switch to QTD mode when quarter is clicked
+  STATE.mode = (STATE.mode === 'ytd' || STATE.mode === 'mtd') ? 'qtd' : STATE.mode;
+  document.querySelectorAll('.pb[data-mode]').forEach(b=>b.classList.remove('active'));
+  const qtdBtn = document.querySelector('.pb[data-mode="qtd"]');
+  if(qtdBtn) qtdBtn.classList.add('active');
+  updateAll();
+}
+
+function setQuarterFromCard(q) {
+  setQuarter(q, document.querySelector(`.qb[data-q="${q}"]`));
+}
+
+function setMonth(val) {
+  if (!val) { STATE.month = null; updateAll(); return; }
+  const idx = parseInt(val);
+  STATE.month = idx;
+  STATE.mode = 'mtd';
+  // Clear quarter buttons
+  document.querySelectorAll('.qb').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.pb[data-mode]').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.pb[data-mode="mtd"]').classList.add('active');
+  updateAll();
+}
+
+/* ══ INIT ══ */
+buildSnapshotTable();
+buildBurnTable();
+buildWCTable();
+buildAllCharts();
+// Default: YTD
+setMode('ytd', document.querySelector('.pb[data-mode="ytd"]'));
+</script>
+
+</div><!-- /bt-dashboard-wrap -->
+
+<script>
+/* ══════════════════════════════════
+   BLOOMTREE AUTH + COMPANY SELECTOR
+══════════════════════════════════ */
+const BT_CLIENTS = [
+  { id:'triffy', name:'Triffy Digital Pvt. Ltd.', short:'Triffy Digital',
+    initials:'TD', color:'#238D5F', type:'E-commerce · D2C · Bengaluru',
+    stats:{ revenue:'₹722L', burn:'₹128L', runway:'28.6mo', liquid:'₹3,657L' },
+    sync:'31 Jan 2026', status:'active' },
+  { id:'acme', name:'Acme Technologies Ltd.', short:'Acme Tech',
+    initials:'AT', color:'#196443', type:'B2B SaaS · Series A',
+    stats:{ revenue:'₹1.12Cr', burn:'₹68.4L', runway:'5.1mo', liquid:'₹2.84Cr' },
+    sync:'02 Mar 2026', status:'alert' },
+  { id:'nova', name:'Nova Healthtech Pvt. Ltd.', short:'Nova Health',
+    initials:'NH', color:'#1d4ed8', type:'HealthTech · Seed · Delhi',
+    stats:{ revenue:'₹38L', burn:'₹22L', runway:'14.2mo', liquid:'₹3.12Cr' },
+    sync:'28 Feb 2026', status:'active' },
+  { id:'kira', name:'Kira Foods Ltd.', short:'Kira Foods',
+    initials:'KF', color:'#b45309', type:'F&B · Series B · Mumbai',
+    stats:{ revenue:'₹4.8Cr', burn:'₹1.1Cr', runway:'8.4mo', liquid:'₹9.24Cr' },
+    sync:'01 Mar 2026', status:'review' },
+  { id:'zype', name:'Zype Infrastructure Ltd.', short:'Zype Infra',
+    initials:'ZI', color:'#6d28d9', type:'Infra · Pre-Series A',
+    stats:{ revenue:'₹12L', burn:'₹45L', runway:'6.8mo', liquid:'₹3.06Cr' },
+    sync:'15 Feb 2026', status:'active' },
+  { id:'bloom', name:'BloomRetail Pvt. Ltd.', short:'BloomRetail',
+    initials:'BR', color:'#0e7490', type:'Retail · Bootstrap · Pune',
+    stats:{ revenue:'₹2.1Cr', burn:'₹38L', runway:'19.4mo', liquid:'₹7.37Cr' },
+    sync:'28 Feb 2026', status:'active' },
+];
+
+const BT_USERS = {
+  'anantha@trififydigital.in': { name:'Anantha R.', initials:'AR', companies:['triffy'] },
+  'admin@bloomtree.in':        { name:'Bloomtree Admin', initials:'BA', companies:'all' },
+};
+
+let btUser = null;
+let btCompany = null;
+
+function btShowScreen(id) {
+  document.querySelectorAll('.bt-screen').forEach(s => s.classList.remove('visible'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('visible');
+  const dash = document.getElementById('bt-dashboard-wrap');
+  dash.classList.toggle('visible', id === 'bt-dashboard-wrap');
+}
+
+function btLogin() {
+  const email = document.getElementById('bt-email').value.trim().toLowerCase();
+  const err   = document.getElementById('bt-err');
+  err.style.display = 'none';
+
+  const user = BT_USERS[email] || BT_USERS['admin@bloomtree.in'];
+  btUser = { ...user, email };
+
+  // Greet
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('bt-greet').textContent = `${greet}, ${btUser.name.split(' ')[0]}.`;
+  document.getElementById('bt-user-lbl').textContent = btUser.name;
+  document.getElementById('bt-avatar-lbl').textContent = btUser.initials;
+
+  btBuildGrid(btUser.companies);
+  btShowScreen('bt-company');
+}
+
+function btBuildGrid(ids) {
+  const list = ids === 'all' ? BT_CLIENTS
+    : BT_CLIENTS.filter(c => ids.includes(c.id));
+
+  const badge = {
+    active: '<span class="bt-badge bt-badge-active">Active</span>',
+    review: '<span class="bt-badge bt-badge-review">Needs Review</span>',
+    alert:  '<span class="bt-badge bt-badge-alert">Alert</span>',
+  };
+
+  document.getElementById('bt-co-grid').innerHTML = list.map(c => `
+    <div class="bt-co-card" onclick="btSelectCompany('${c.id}')">
+      <div class="bt-co-head">
+        <div class="bt-co-logo" style="background:${c.color}">${c.initials}</div>
+        <div><div class="bt-co-name">${c.name}</div><div class="bt-co-type">${c.type}</div></div>
+      </div>
+      <div class="bt-co-stats">
+        <div class="bt-co-stat"><div class="bt-co-stat-val">${c.stats.revenue}</div><div class="bt-co-stat-lbl">Revenue</div></div>
+        <div class="bt-co-stat"><div class="bt-co-stat-val" style="color:#b91c1c">${c.stats.burn}</div><div class="bt-co-stat-lbl">Burn/mo</div></div>
+        <div class="bt-co-stat"><div class="bt-co-stat-val" style="color:#238D5F">${c.stats.runway}</div><div class="bt-co-stat-lbl">Runway</div></div>
+        <div class="bt-co-stat"><div class="bt-co-stat-val">${c.stats.liquid}</div><div class="bt-co-stat-lbl">Liquid</div></div>
+      </div>
+      <div class="bt-co-foot">
+        <span class="bt-co-sync">Synced ${c.sync}</span>
+        ${badge[c.status]}
+      </div>
+    </div>`).join('');
+}
+
+function btFilter(q) {
+  const ids = q ? BT_CLIENTS.filter(c => c.name.toLowerCase().includes(q.toLowerCase())).map(c=>c.id)
+               : btUser.companies;
+  btBuildGrid(ids);
+}
+
+function btSelectCompany(id) {
+  btCompany = BT_CLIENTS.find(c => c.id === id);
+  // Patch dashboard identity
+  document.getElementById('dash-co-mark').textContent = btCompany.initials;
+  document.getElementById('dash-co-mark').style.background = btCompany.color;
+  document.getElementById('dash-co-name').textContent = btCompany.short;
+  document.getElementById('dash-co-strip').textContent = btCompany.short;
+  document.getElementById('dash-avatar').textContent = btUser.initials;
+  // Show dashboard
+  document.querySelectorAll('.bt-screen').forEach(s => s.classList.remove('visible'));
+  document.getElementById('bt-dashboard-wrap').classList.add('visible');
+  // Rebuild charts (canvas may need re-init after display:none → block)
+  setTimeout(() => { buildAllCharts(); setMode('ytd', document.querySelector('.pb[data-mode="ytd"]')); }, 80);
+}
+
+function btSwitchCompany() {
+  document.getElementById('bt-dashboard-wrap').classList.remove('visible');
+  btBuildGrid(btUser ? btUser.companies : 'all');
+  document.getElementById('bt-company').classList.add('visible');
+}
+
+function btLogout() {
+  btUser = null; btCompany = null;
+  document.getElementById('bt-dashboard-wrap').classList.remove('visible');
+  document.querySelectorAll('.bt-screen').forEach(s => s.classList.remove('visible'));
+  document.getElementById('bt-login').classList.add('visible');
+}
+</script>
+</body>
+</html>
